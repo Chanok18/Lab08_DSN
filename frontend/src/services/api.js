@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = '';
 
 export async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('techstore_token');
@@ -36,7 +36,7 @@ export async function apiRequest(endpoint, options = {}) {
     return data;
   } catch (error) {
     if (!error.status) {
-      error.message = 'No se pudo conectar con el servidor backend (http://localhost:3000). Verifique que esté encendido.';
+      error.message = 'No se pudo conectar con el servidor backend (https://3000-cs-99ec16a6-7375-4cef-bfcb-fdb59f802bc9.cs-us-east1-dogs.cloudshell.dev). Verifique que esté encendido.';
     }
     throw error;
   }
