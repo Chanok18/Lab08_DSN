@@ -154,13 +154,26 @@ export const verifyMFA = async (req, res, next) => {
 
 export const socialCallback = (req, res) => {
   if (!req.user) {
-    return res.status(401).json({ message: 'Error al autenticar usuario social' });
+    return res.status(401).json({
+      message: 'Error al autenticar usuario social'
+    });
   }
 
   const token = generateToken(req.user._id, req.user.role);
-  return res.json({
-    message: 'Autenticación social exitosa',
-    token,
-    user: req.user,
-  });
+
+  const frontendUrl = process.env.FRONTEND_URL ||
+    'https://5173-cs-99ec16a6-7375-4cef-bfcb-fdb59f802bc9.cs-us-east1-dogs.cloudshell.dev';
+
+  const user = encodeURIComponent(JSON.stringify({
+    _id: req.user._id,
+    name: req.user.name,
+    email: req.user.email,
+    role: req.user.role,
+    store: req.user.store,
+    avatar: req.user.avatar
+  }));
+
+  return res.redirect(
+    `${frontendUrl}/#social_token=${encodeURIComponent(token)}&social_user=${user}`
+  );
 };

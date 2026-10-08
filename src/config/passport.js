@@ -36,6 +36,8 @@ passport.use(
             email: profile.emails?.[0]?.value,
             googleId: profile.id,
             avatar: profile.photos?.[0]?.value,
+            role: 'Empleado de Ventas',
+            store: 'Tienda Central',
           });
         }
         return done(null, user);
@@ -45,7 +47,6 @@ passport.use(
     }
   )
 );
-
 // Estrategia GitHub
 passport.use(
   new GitHubStrategy(
@@ -57,19 +58,40 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        const email =
+          profile.emails && profile.emails[0]
+            ? profile.emails[0].value
+            : `${profile.username}@github.com`;
+
+        // Primero buscamos por GitHub ID
         let user = await User.findOne({ githubId: profile.id });
+
+        // Si no existe, buscamos por correo
         if (!user) {
-          const email =
-            profile.emails && profile.emails[0]
-              ? profile.emails[0].value
-              : `${profile.username}@github.com`;
+          user = await User.findOne({ email });
+        }
+
+        // Si el correo ya existe, vinculamos GitHub a ese usuario
+        if (user) {
+          user.githubId = profile.id;
+
+          if (!user.avatar) {
+            user.avatar = profile.photos?.[0]?.value;
+          }
+
+          await user.save();
+        } else {
+          // Si no existe ni por GitHub ni por correo, creamos usuario
           user = await User.create({
             name: profile.displayName || profile.username,
-            email: email,
+            email,
             githubId: profile.id,
             avatar: profile.photos?.[0]?.value,
+            role: 'Empleado de Ventas',
+            store: 'Tienda Central',
           });
         }
+
         return done(null, user);
       } catch (error) {
         return done(error, null);

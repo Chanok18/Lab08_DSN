@@ -23,10 +23,23 @@ router.get('/google/callback', (req, res, next) => {
 router.get('/github', passport.authenticate('github'));
 router.get('/github/callback', (req, res, next) => {
   passport.authenticate('github', { session: false }, (err, user, info) => {
-    if (err || !user) return res.status(401).json({ message: 'Falló la autenticación con GitHub' });
+    if (err) {
+      console.error('ERROR GITHUB:', err);
+      return res.status(500).json({
+        message: 'Error autenticando con GitHub',
+        error: err.message
+      });
+    }
+
+    if (!user) {
+      console.error('GITHUB INFO:', info);
+      return res.status(401).json({
+        message: 'GitHub no devolvió usuario',
+        info
+      });
+    }
+
     req.user = user;
     return socialCallback(req, res);
   })(req, res, next);
-});
-
-export default router;
+});export default router;
